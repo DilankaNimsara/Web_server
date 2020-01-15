@@ -1,14 +1,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
-#include <sys/types.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
-#include <netdb.h>
-#include <arpa/inet.h>
 #include <string.h>
-#include <sys/stat.h>
-#include <sys/sendfile.h>
 #include <fcntl.h>
 
 int main(int argc, char *argv[]){
@@ -17,9 +12,8 @@ int main(int argc, char *argv[]){
 	socklen_t sin_len= sizeof(client_addr);
 	int fd_server,fd_client;
 	int on=1;
-	char mesg[99999], *reqline[3], data_to_send[1024], path[99999];
-    int rcvd, fd, bytes_read;
-	char PORT[6];
+	char msg[99999], *reqline[3], data_to_send[1024], path[99999];
+    int received, fd, bytes_read;
 
 	fd_server= socket(AF_INET,SOCK_STREAM,0);
 
@@ -59,11 +53,11 @@ int main(int argc, char *argv[]){
 
 			if(!fork()){
 
-			rcvd=recv(fd_client, mesg, 99999, 0);
+			received=recv(fd_client, msg, 99999, 0);
 
-				if(rcvd>0){
-					printf("%s", mesg);
-					reqline[0] = strtok (mesg, " \t\n");
+				if(received>0){
+					printf("%s", msg);
+					reqline[0] = strtok (msg, " \t\n");
 					if ( strncmp(reqline[0], "GET\0", 4)==0 ){
 
 						reqline[1] = strtok (NULL, " \t");
