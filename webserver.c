@@ -11,11 +11,11 @@ int main(int argc, char *argv[]){
 	struct sockaddr_in server_addr, client_addr;
 	socklen_t sin_len= sizeof(client_addr);
 	int fd_server,fd_client;
-	int on=1;
-	char msg[99999], *reqline[3], data_to_send[1024], path[99999];
+	int on = 1;
+	char msg[10000], *reqline[3], data_to_send[1024], filepath[10000];
     int received, fd, bytes_read;
 
-	fd_server= socket(AF_INET,SOCK_STREAM,0);
+	fd_server = socket(AF_INET,SOCK_STREAM,0);
 
 	if(fd_server<0){
 		perror("socket");
@@ -26,7 +26,7 @@ int main(int argc, char *argv[]){
 
 	server_addr.sin_family=AF_INET;
 	server_addr.sin_addr.s_addr=INADDR_ANY;
-	server_addr.sin_port=htons(8081);
+	server_addr.sin_port=htons(8080);
 
 	if(bind(fd_server, (struct sockaddr *) &server_addr,sizeof(server_addr))==-1){
 		perror("bind");
@@ -61,22 +61,23 @@ int main(int argc, char *argv[]){
 					if ( strncmp(reqline[0], "GET\0", 4)==0 ){
 
 						reqline[1] = strtok (NULL, " \t");
-
+						// If no file is selected, open index.html as default
 						if ( strncmp(reqline[1], "/\0", 2)==0 ){
 							reqline[1] = "/index.html";     
 						}
 
-						strcpy(path, getenv("PWD"));
-						strcpy(&path[strlen(getenv("PWD"))], reqline[1]);
-						printf("file: %s\n", path);
-
-						if ( (fd=open(path, O_RDONLY))!=-1 ){    //FILE FOUND
+						strcpy(filepath, getenv("PWD"));
+						strcpy(&filepath[strlen(getenv("PWD"))], reqline[1]);
+						printf("file: %s\n", filepath);
+						// File found
+						if ( (fd=open(filepath, O_RDONLY))!=-1 ){    
 							send(fd_client, "HTTP/1.1 200 OK\n\n", 17, 0);
 							while ( (bytes_read=read(fd, data_to_send, 1024))>0 ){
 								write (fd_client, data_to_send, bytes_read);
 							}
 						}else{
-							write(fd_client, "HTTP/1.1 404 Not Found\n", 23); //FILE NOT FOUND
+							// File not found
+							write(fd_client, "HTTP/1.1 404 Not Found\n", 23);
 						}   
 					}
 				}
